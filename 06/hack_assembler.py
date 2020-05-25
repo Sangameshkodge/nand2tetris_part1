@@ -98,7 +98,7 @@ F=open(args.file,'r')
 ## Load all the files 
 symbolic_code=F.readlines()
 
-
+#counting the line for replacing labels
 line_counter=0
 
 
@@ -108,6 +108,7 @@ for line in symbolic_code:
     
     if (line==''):
         continue
+    ##add label to symbol_table dict
     if (line[0]=='(' and line[-1]==')'):
         
         symbol_table[line[1:-1]]=''
@@ -116,16 +117,21 @@ for line in symbolic_code:
         symbol_table[line[1:-1]]+=bin(line_counter)[2:]
     
     else:
+        #increament counter for every A and C statement
         line_counter+=1
     
 temp_reg=16
 for line in symbolic_code:
+    #ignore comments by 
     line=line.split('//')[0]
     line=line.strip()
     
+    #skip line if  label or empty line
     if (line==''or (line[0]=='('and line[-1]==")")):
         continue
+    # A instruction 
     if(line[0]=='@'):
+        #Numeric address
         if (line[1:].isnumeric()):
             instruction='0'
             for i in range( 15- len(bin(int(line[1:]))[2:]) ):
@@ -133,33 +139,43 @@ for line in symbolic_code:
             instruction+=bin(int(line[1:]))[2:]
               
         else:
+            #if new variable used add to symbol table
             if line[1:] not in symbol_table.keys():
                 symbol_table[line[1:]]=''
                 for i in range( 15- len(bin(temp_reg)[2:]) ):
                     symbol_table[line[1:]]+='0'
                 symbol_table[line[1:]]+=bin(temp_reg)[2:]
                 temp_reg+=1
-                
+             
             instruction='0'+symbol_table[line[1:]]
+        #printing the instruction
         print(instruction)
         
     else:
+        #C instruction 
         instruction='111'
-        line = line.split(';')
         
+        #check for jump
+        line = line.split(';')
         if len(line)==1:
+            #no jump present 
             inst_jump='null'
         else:
             inst_jump=line[1].strip()
+        #ignore spaces between in between
         line=line[0].strip()
-                
+        
+        #split destination and compute
         line = line.split('=')
         if len(line)==1:
+            #no destination
             inst_dest='null'
             inst_comp=line[0].strip()
         else:
+            #set destination and compute ignoring spaces before and after
             inst_dest=line[0].strip()
             inst_comp=line[1].strip()
+        #printing the instruction 
         instruction+=comp[inst_comp]+dest[inst_dest]+jump[inst_jump]
         print(instruction)
     
